@@ -313,6 +313,9 @@ module Mundipagg
 
 			level = @log_level || :debug
 			enable_log = true
+			filters = ['CreditCardNumber',
+			           'SecurityCode',
+			           'MerchantKey']
 
 			if not savon_levels.include? @log_level
 				@log_level = :none
@@ -328,6 +331,8 @@ module Mundipagg
 				wsdl url
 				log enable_log
 				log_level level
+				filters filters
+
 				namespaces 'xmlns:mun' => 'http://schemas.datacontract.org/2004/07/MundiPagg.One.Service.DataContracts'
 			end
 
