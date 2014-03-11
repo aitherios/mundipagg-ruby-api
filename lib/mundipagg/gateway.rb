@@ -261,21 +261,33 @@ module Mundipagg
 					transaction.paymentMethodCode = 1 # Simulator payment code
 				end
 
-				transaction_hash = {
-					'mun:AmountInCents' => transaction.amountInCents,
-					'mun:CreditCardBrandEnum' => transaction.creditCardBrandEnum.to_s,
-					'mun:CreditCardNumber' => transaction.creditCardNumber,
-					'mun:CreditCardOperationEnum' => transaction.creditCardOperationEnum.to_s,
-					'mun:ExpMonth' => transaction.expirationMonth,
-					'mun:ExpYear' => transaction.expirationYear,
-					'mun:HolderName' => transaction.holderName,
-					'mun:InstallmentCount' => transaction.installmentCount,
-					'mun:PaymentMethodCode' => transaction.paymentMethodCode,
-					'mun:SecurityCode' => transaction.securityCode,
-					'mun:TransactionReference' => transaction.transactionReference
-				}
-
-				if transaction.recurrency.nil? == false
+				transaction_hash = if transaction.instantBuyKey
+                                    {
+                                      'mun:AmountInCents' => transaction.amountInCents,
+                                      'mun:CreditCardBrandEnum' => transaction.creditCardBrandEnum.to_s,
+                                      'mun:InstantBuyKey' => transaction.instantBuyKey,
+                                      'mun:CreditCardOperationEnum' => transaction.creditCardOperationEnum.to_s,
+                                      'mun:InstallmentCount' => transaction.installmentCount,
+                                      'mun:PaymentMethodCode' => transaction.paymentMethodCode,
+                                      'mun:TransactionReference' => transaction.transactionReference
+                                    }
+                                  else
+                                    {
+                                      'mun:AmountInCents' => transaction.amountInCents,
+                                      'mun:CreditCardBrandEnum' => transaction.creditCardBrandEnum.to_s,
+                                      'mun:CreditCardNumber' => transaction.creditCardNumber,
+                                      'mun:CreditCardOperationEnum' => transaction.creditCardOperationEnum.to_s,
+                                      'mun:ExpMonth' => transaction.expirationMonth,
+                                      'mun:ExpYear' => transaction.expirationYear,
+                                      'mun:HolderName' => transaction.holderName,
+                                      'mun:InstallmentCount' => transaction.installmentCount,
+                                      'mun:PaymentMethodCode' => transaction.paymentMethodCode,
+                                      'mun:SecurityCode' => transaction.securityCode,
+                                      'mun:TransactionReference' => transaction.transactionReference
+                                   }
+                                 end
+                    
+                                if transaction.recurrency.nil? == false
 					
 					transaction_hash['mun:Recurrency'] = {
 						'mun:DateToStartBilling' => transaction.recurrency.dateToStartBilling,
@@ -311,28 +323,26 @@ module Mundipagg
 			end
 			savon_levels = { :none => -1, :debug => 0, :info => 1, :warn => 2, :error => 3 }
 
-			level = @log_level || :debug
-			enable_log = true
-			filters = ['CreditCardNumber',
-			           'SecurityCode',
-			           'MerchantKey']
-
 			if not savon_levels.include? @log_level
 				@log_level = :none
 			end
+
+			level = @log_level || :debug
+			enable_log = true
+			filters = [:CreditCardNumber,
+			           :SecurityCode,
+			           :MerchantKey]
 
 			if @log_level == :none
 				level = :error
 				enable_log = false
 			end
 
-
 			client = Savon.client do
 				wsdl url
 				log enable_log
 				log_level level
 				filters filters
-
 				namespaces 'xmlns:mun' => 'http://schemas.datacontract.org/2004/07/MundiPagg.One.Service.DataContracts'
 			end
 
