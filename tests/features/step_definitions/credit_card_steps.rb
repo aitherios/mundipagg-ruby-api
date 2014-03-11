@@ -84,7 +84,10 @@ end
 #Scenario 3:
 
 Then(/^the log file doesn't contain sensible information$/) do
-  @stdout.string.should_not include(@transaction.creditCardNumber)
-  @stdout.string.should_not include(@transaction.securityCode)
-  @stdout.string.should_not include(@order.merchantKey)
+  @stdout.string.should_not include(
+    "CreditCardNumber>#{@transaction.creditCardNumber}")
+  @stdout.string.should_not include(
+    "SecurityCode>#{@transaction.securityCode}")
+  @stdout.string.should_not include(
+    "MerchantKey>#{@order.merchantKey}")
 end
